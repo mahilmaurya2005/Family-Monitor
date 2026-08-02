@@ -165,6 +165,7 @@
 - Optimized report queries to preselect owned device IDs and filter logs by `deviceId in (...)` instead of relation joins.
 - Stopped dashboard Overview auto-refresh from fetching weekly/monthly reports; those now load on the Reports view.
 - Made report-view audit writes non-blocking so slow audit inserts do not hold up report responses.
+- Added a show/hide eye button to the dashboard login password field.
 
 ## In Progress
 
@@ -207,3 +208,4 @@
 - Production dashboard API checks passed for `/devices`, `/reports/daily`, `/reports/monthly`, and `/audit-logs`.
 - Latest backend build, backend tests, and dashboard production build passed after the API stability fixes.
 - Latest backend build, backend tests, and dashboard production build passed after report query optimization.
+- Latest dashboard production build passed after adding the login password eye toggle.

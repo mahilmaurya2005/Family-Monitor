@@ -3,6 +3,8 @@ import {
   BatteryCharging,
   Bell,
   CheckCircle2,
+  Eye,
+  EyeOff,
   FileDown,
   Gauge,
   MapPin,
@@ -565,6 +567,8 @@ function LoginPage({
   onLogin: () => void;
   onPasswordChange: (value: string) => void;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <main className="grid min-h-screen place-items-center bg-mist px-4 py-8">
       <section className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
@@ -596,13 +600,28 @@ function LoginPage({
           </label>
           <label className="grid gap-1 text-sm font-semibold">
             Password
-            <input
-              className="h-10 rounded-md border border-zinc-300 px-3 text-sm font-normal outline-none focus:border-teal"
-              onChange={(event) => onPasswordChange(event.target.value)}
-              placeholder="Password"
-              type="password"
-              value={password}
-            />
+            <span className="relative">
+              <input
+                className="h-10 w-full rounded-md border border-zinc-300 px-3 pr-10 text-sm font-normal outline-none focus:border-teal"
+                onChange={(event) => onPasswordChange(event.target.value)}
+                placeholder="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+              />
+              <button
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                onClick={() => setShowPassword((current) => !current)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            </span>
           </label>
           <button
             className="mt-2 h-10 rounded-md bg-teal px-4 text-sm font-semibold text-white"
