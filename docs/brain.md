@@ -158,10 +158,12 @@
 - Built a standalone Android release APK pointed at the live Render backend.
 - Installed the standalone Android release APK on the connected OnePlus device and launched it successfully.
 - Fixed backend CORS origin matching so dashboard origins with/without a trailing slash are accepted.
+- Removed seeded production dummy devices and their cascaded sample logs from Supabase.
+- Verified Vercel dashboard API proxy returns `200 OK` for devices, reports, and audit endpoints with a valid admin token.
 
 ## In Progress
 
-- Redeploy the backend with the CORS fix, then validate dashboard data loading and production mobile sync.
+- Validate dashboard browser session refresh and production mobile sync.
 
 ## Left
 
@@ -197,3 +199,4 @@
 - Latest Android release APK build passed at `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`.
 - Latest Android release APK installed successfully with ADB and the app process is running without AndroidRuntime/ReactNativeJS crash logs.
 - Latest backend production build passed after the CORS normalization fix.
+- Production dashboard API checks passed for `/devices`, `/reports/daily`, `/reports/monthly`, and `/audit-logs`.
