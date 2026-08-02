@@ -199,6 +199,14 @@ export function App() {
     return () => window.clearInterval(interval);
   }, [refreshToken]);
 
+  useEffect(() => {
+    if (!token || activeView !== 'Reports') {
+      return;
+    }
+
+    void loadExtendedReports();
+  }, [activeView, token]);
+
   async function login() {
     setStatus('Signing in...');
     try {
@@ -309,12 +317,6 @@ export function App() {
       const deviceResponse = await safeLoad('devices', () => api.getDevices(), devices);
       const typedDevices = deviceResponse as DeviceFromApi[];
       const dailyResponse = await safeLoad('daily report', () => api.getDailyReport(), report);
-      const weeklyResponse = await safeLoad('weekly report', () => api.getWeeklyReport(), weeklyReport);
-      const monthlyResponse = await safeLoad(
-        'monthly report',
-        () => api.getMonthlyReport(),
-        monthlyReport,
-      );
       const auditResponse = await safeLoad('audit logs', () => api.getAuditLogs(), auditLogs);
       const locationResponse: Array<LatestLocation | null> = [];
       for (const device of typedDevices) {
@@ -342,8 +344,6 @@ export function App() {
       }
       setDevices(typedDevices);
       setReport(dailyResponse);
-      setWeeklyReport(weeklyResponse);
-      setMonthlyReport(monthlyResponse);
       setAuditLogs(auditResponse);
       setLatestLocations(locationResponse.filter(isLatestLocation));
       setStatus(failures.length ? `Partial data loaded: ${failures.join(', ')}` : 'Live backend data');
@@ -359,6 +359,21 @@ export function App() {
       setLatestLocations([]);
       setStatus('Backend unavailable');
     }
+  }
+
+  async function loadExtendedReports() {
+    const failures: string[] = [];
+    try {
+      setWeeklyReport(await api.getWeeklyReport());
+    } catch {
+      failures.push('weekly report');
+    }
+    try {
+      setMonthlyReport(await api.getMonthlyReport());
+    } catch {
+      failures.push('monthly report');
+    }
+    setStatus(failures.length ? `Partial reports loaded: ${failures.join(', ')}` : 'Reports loaded');
   }
 
   async function openDeviceDetail(device: DeviceFromApi, type: DetailType, showLoading = true) {

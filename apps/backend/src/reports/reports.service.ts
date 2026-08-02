@@ -13,13 +13,21 @@ export class ReportsService {
   async summary(ownerId: string, period: 'daily' | 'weekly' | 'monthly', deviceId?: string) {
     const now = new Date();
     const startsAt = this.getStartDate(period, now);
-    const deviceFilter = {
-      ownerId,
-      ...(deviceId ? { id: deviceId } : {}),
-    };
+    const devices = await this.prisma.device.findMany({
+      where: {
+        ownerId,
+        ...(deviceId ? { id: deviceId } : {}),
+      },
+      select: { id: true },
+    });
+    const deviceIds = devices.map((device) => device.id);
+
+    if (deviceIds.length === 0) {
+      return this.emptyReport(period, startsAt, now);
+    }
+
     const where = {
-      ...(deviceId ? { deviceId } : {}),
-      device: deviceFilter,
+      deviceId: { in: deviceIds },
       openedAt: { gte: startsAt, lte: now },
     };
 
@@ -33,34 +41,32 @@ export class ReportsService {
     });
     const batteryCount = await this.prisma.batteryLog.count({
       where: {
-        ...(deviceId ? { deviceId } : {}),
-        device: deviceFilter,
+        deviceId: { in: deviceIds },
         recordedAt: { gte: startsAt },
       },
     });
     const locationCount = await this.prisma.locationLog.count({
       where: {
-        ...(deviceId ? { deviceId } : {}),
-        device: deviceFilter,
+        deviceId: { in: deviceIds },
         recordedAt: { gte: startsAt },
       },
     });
     const callCount = await this.prisma.callLog.count({
       where: {
-        ...(deviceId ? { deviceId } : {}),
-        device: deviceFilter,
+        deviceId: { in: deviceIds },
         startedAt: { gte: startsAt },
       },
     });
     const notificationCount = await this.prisma.notificationLog.count({
       where: {
-        ...(deviceId ? { deviceId } : {}),
-        device: deviceFilter,
+        deviceId: { in: deviceIds },
         postedAt: { gte: startsAt },
       },
     });
 
-    await this.audit.record(ownerId, 'report.view', `report:${period}`, { deviceId });
+    void Promise.resolve(
+      this.audit.record(ownerId, 'report.view', `report:${period}`, { deviceId }),
+    ).catch(() => undefined);
 
     return {
       period,
@@ -104,5 +110,20 @@ export class ReportsService {
       startsAt.setMonth(startsAt.getMonth() - 1);
     }
     return startsAt;
+  }
+
+  private emptyReport(period: 'daily' | 'weekly' | 'monthly', startsAt: Date, endsAt: Date) {
+    return {
+      period,
+      startsAt,
+      endsAt,
+      topApps: [],
+      counts: {
+        battery: 0,
+        locations: 0,
+        calls: 0,
+        notifications: 0,
+      },
+    };
   }
 }

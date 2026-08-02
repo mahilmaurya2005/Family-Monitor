@@ -162,10 +162,13 @@
 - Verified Vercel dashboard API proxy returns `200 OK` for devices, reports, and audit endpoints with a valid admin token.
 - Reduced backend database query concurrency in reports and device activity endpoints to avoid Supabase/Render pool pressure.
 - Changed dashboard live-data loading to fetch sections sequentially and keep partial successful data if one API request fails.
+- Optimized report queries to preselect owned device IDs and filter logs by `deviceId in (...)` instead of relation joins.
+- Stopped dashboard Overview auto-refresh from fetching weekly/monthly reports; those now load on the Reports view.
+- Made report-view audit writes non-blocking so slow audit inserts do not hold up report responses.
 
 ## In Progress
 
-- Redeploy backend and dashboard with the API stability fixes, then validate browser refresh and production mobile sync.
+- Redeploy backend and dashboard with the second report-timeout fix, then validate browser refresh and production mobile sync.
 
 ## Left
 
@@ -203,3 +206,4 @@
 - Latest backend production build passed after the CORS normalization fix.
 - Production dashboard API checks passed for `/devices`, `/reports/daily`, `/reports/monthly`, and `/audit-logs`.
 - Latest backend build, backend tests, and dashboard production build passed after the API stability fixes.
+- Latest backend build, backend tests, and dashboard production build passed after report query optimization.

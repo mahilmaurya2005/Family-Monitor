@@ -2,6 +2,9 @@ import { ReportsService } from './reports.service';
 
 function createService() {
   const prisma = {
+    device: {
+      findMany: jest.fn().mockResolvedValue([{ id: 'device-1' }]),
+    },
     appUsageLog: {
       groupBy: jest.fn().mockResolvedValue([
         {
@@ -41,11 +44,14 @@ describe('ReportsService', () => {
     expect(prisma.appUsageLog.groupBy).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          deviceId: 'device-1',
-          device: { ownerId: 'user-1', id: 'device-1' },
+          deviceId: { in: ['device-1'] },
         }),
       }),
     );
+    expect(prisma.device.findMany).toHaveBeenCalledWith({
+      where: { ownerId: 'user-1', id: 'device-1' },
+      select: { id: true },
+    });
     expect(audit.record).toHaveBeenCalledWith('user-1', 'report.view', 'report:daily', {
       deviceId: 'device-1',
     });
