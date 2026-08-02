@@ -157,10 +157,11 @@
 - Updated the mobile app API base URL to the live Render backend for production-device testing.
 - Built a standalone Android release APK pointed at the live Render backend.
 - Installed the standalone Android release APK on the connected OnePlus device and launched it successfully.
+- Fixed backend CORS origin matching so dashboard origins with/without a trailing slash are accepted.
 
 ## In Progress
 
-- Validate production pairing and first sync from the release APK into Supabase/Render.
+- Redeploy the backend with the CORS fix, then validate dashboard data loading and production mobile sync.
 
 ## Left
 
@@ -195,3 +196,4 @@
 - Render backend health returned OK and production login returned an access token for the seeded admin.
 - Latest Android release APK build passed at `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`.
 - Latest Android release APK installed successfully with ADB and the app process is running without AndroidRuntime/ReactNativeJS crash logs.
+- Latest backend production build passed after the CORS normalization fix.

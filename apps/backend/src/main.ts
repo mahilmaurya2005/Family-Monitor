@@ -14,8 +14,15 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api/v1');
+  const allowedOrigins = normalizeOrigins(config.get('WEB_ORIGIN', 'http://localhost:5173'));
   app.enableCors({
-    origin: config.get('WEB_ORIGIN', 'http://localhost:5173'),
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
   });
   app.useGlobalPipes(
@@ -42,6 +49,17 @@ function assertProductionSecrets(
       throw new Error(`${name} must be set to a strong production secret`);
     }
   }
+}
+
+function normalizeOrigins(value: string) {
+  return value
+    .split(',')
+    .map((origin) => normalizeOrigin(origin))
+    .filter(Boolean);
+}
+
+function normalizeOrigin(origin: string) {
+  return origin.trim().replace(/\/+$/, '');
 }
 
 bootstrap();
