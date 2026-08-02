@@ -1,0 +1,12 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": "../..",
+    "paths": {
+      "@family-monitor/types": ["packages/types/src/index.ts"],
+      "@family-monitor/api-client": ["packages/api-client/src/index.ts"]
+    }
+  },
+  "include": ["src", "App.tsx"]
+}

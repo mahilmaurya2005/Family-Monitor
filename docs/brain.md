@@ -1,0 +1,184 @@
+# Brain
+
+## Completed
+
+- Read all original planning docs and identified the product as a consent-based Family Monitoring Platform.
+- Created monorepo structure with `apps/backend`, `apps/dashboard`, `apps/mobile`, shared packages, Prisma, Docker, and docs.
+- Added NestJS backend scaffold with auth, devices, sync, reports, health, and Prisma service.
+- Added Prisma database schema for users, devices, permissions, app usage, location, battery, call logs, notifications, reports, and audit logs.
+- Added React/Vite admin dashboard with multi-device overview, permission badges, demo fallback data, and login row.
+- Added React Native mobile starter with consent onboarding and device registration shell.
+- Added shared API client, shared types, and utility package.
+- Added Docker Compose, backend Dockerfile, Nginx config, CI workflow, and README setup instructions.
+- Implemented JWT auth guard and current-user decorator.
+- Scoped device, report, and sync APIs to the authenticated admin user.
+- Added seed script for demo admin, sample devices, permissions, and sample activity logs.
+- Added device pairing-code model.
+- Added backend pairing APIs:
+  - `POST /api/v1/devices/pairing-codes`
+  - `POST /api/v1/devices/pair`
+- Added API client methods for pairing-code creation and device pairing.
+- Added dashboard pairing-code UI in the devices panel.
+- Updated mobile app registration to use pairing code instead of pasted admin token.
+- Added shared call-log and notification sync contracts.
+- Added mobile local registration storage for paired device id, permission grants, and sync cursor.
+- Added mobile sync orchestrator with offline queue replay, permission-aware collection, upload, and queue fallback.
+- Wired mobile UI to save paired registration and trigger manual `Sync now`.
+- Kept Android native module template aligned with notification sync interface.
+- Added Android manifest permission/service template.
+- Added Kotlin native collector implementations for app usage, battery, last known location, call logs, and notification buffer reads.
+- Added React Native native package template.
+- Added notification listener service template.
+- Added `docs/mobile-permissions.md` with permission/disclosure/integration guidance.
+- Added persisted mobile sync settings for enable state and interval.
+- Added React Native foreground sync scheduler hook using saved settings and `AppState`.
+- Wired mobile UI controls for scheduled sync enable/disable, interval minutes, and scheduler status.
+- Added Android WorkManager background sync worker and scheduler module templates.
+- Added TypeScript native bridge for Android background scheduler and connected it to scheduler settings.
+- Added `docs/mobile-background-sync.md` with foreground scheduler and Android WorkManager integration notes.
+- Added dashboard multi-view navigation for Overview, Devices, Activity, Location, Reports, Settings, and Audit Logs.
+- Added dashboard device pairing view, activity counters, location timeline placeholder, report period cards, settings cards, and audit trail view.
+- Added API client helpers for weekly and monthly reports.
+- Added backend audit module and `GET /api/v1/audit-logs`.
+- Added audit writes for login, device pairing-code creation, device registration/pairing, report view, and CSV export.
+- Added `GET /api/v1/reports/export.csv` for CSV report export.
+- Wired dashboard export button to download daily CSV and Audit Logs view to live backend audit data.
+- Added `UserSession` Prisma model for admin refresh-token sessions.
+- Backend refresh tokens are stored hashed, rotated on refresh, and revoked on logout.
+- Added API client methods for refresh and logout.
+- Dashboard persists access + refresh tokens, refreshes sessions on load/interval, and revokes refresh token on logout.
+- Added RBAC role decorator and guard.
+- Applied admin role policy to dashboard-facing backend endpoints.
+- Added dashboard report export period selector.
+- Added backend unit tests for CSV escaping and role guard behavior.
+- Added production dashboard Dockerfile for Vite static assets served by Nginx.
+- Updated Docker Compose to run dashboard/Nginx on port `8080` with `/api` proxy to backend.
+- Updated Nginx SPA fallback and backend health proxy.
+- Rewrote deployment docs with Docker, Nginx, environment, migration, and CI/CD guidance.
+- Updated README with production-like Docker stack instructions.
+- Added broader backend service tests for device pairing, ownership checks, audit writes, report scoping, and CSV export audit behavior.
+- Added dashboard Vitest + Testing Library setup and dashboard shell smoke test.
+- Added Mermaid ER diagram documentation.
+- Added database migration workflow documentation.
+- Added device-token authentication path for mobile sync endpoints.
+- Sync endpoints now authenticate paired device identity instead of admin web identity.
+- Mobile stores paired `deviceAccessToken` and uses it for sync requests.
+- Added Android Gradle integration plan and WorkManager upload implementation notes.
+- Generated and merged the full React Native Android project into `apps/mobile/android`.
+- Normalized Android package/application id to `com.familymonitor`.
+- Registered `DeviceCollectorsPackage` in `MainApplication.kt`.
+- Integrated native collector, notification listener, and WorkManager Kotlin files into Android source.
+- Integrated Android permissions, notification listener service, AndroidX core, and WorkManager Gradle dependencies.
+- Added Android local setup documentation with JDK/Android SDK requirements and build commands.
+- Installed Android CLI through winget on the current Windows machine.
+- Installed Android SDK Platform 34, Build Tools 34.0.0, Platform-Tools, and Emulator under `C:\Users\mahil\AppData\Local\Android\Sdk`.
+- Found usable Java at `C:\Program Files\Android\openjdk\jdk-21.0.8` and validated `java -version`.
+- Added `apps/mobile/android/local.properties` with the local Android SDK path.
+- Increased Gradle wrapper network timeout and switched wrapper distribution to `gradle-8.8-bin.zip`.
+- Extracted the manually downloaded Gradle 8.8 distribution under `.tools/gradle-8.8`.
+- Added missing React Native Android build dependencies to the mobile package:
+  - `@react-native/gradle-plugin`
+  - `@react-native-community/cli`
+  - `@react-native-community/cli-platform-android`
+- Verified `npx @react-native-community/cli config` now succeeds for the mobile app.
+- Re-ran Android Gradle build and confirmed it reaches Android dependency resolution.
+- Freed-space retry completed successfully: Android debug APK builds at `apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk`.
+- Checked runtime targets: no Android device is currently connected through ADB and no emulator AVD exists on this machine.
+- Tried to install additional command-line AVD tooling/system image; the large system-image install timed out and `cmdline-tools;latest` did not install through the current Android CLI.
+- Connected Android phone over ADB (`cd12d639`, model `CPH2569`).
+- Installed `app-debug.apk` on the connected Android phone with `adb install -r`.
+- Launched the installed Android app with `adb shell monkey -p com.familymonitor`.
+- Fixed the React Native debug red screen by starting Metro on port 8081 and adding `adb reverse tcp:8081 tcp:8081`.
+- Verified Metro responds at `http://localhost:8081/status` and clean-relaunched the Android app.
+- Fixed Metro 500 bundle error for `@babel/runtime/helpers/interopRequireDefault` by adding pnpm/monorepo resolver settings to `apps/mobile/metro.config.js`.
+- Restarted Metro with `--reset-cache`, verified the Android bundle endpoint returns HTTP 200, and clean-relaunched the app.
+- Switched the mobile API base URL from Android emulator host `10.0.2.2` to `localhost` for the current physical-device plus ADB reverse workflow.
+- Added ADB reverse forwarding for backend port 4000 with `adb reverse tcp:4000 tcp:4000`.
+- Created an isolated project-local PostgreSQL cluster under `.local/postgres/data` on port 55432 with user/password `family` / `family`.
+- Updated backend `.env` to use `postgresql://family:family@localhost:55432/family_monitor?schema=public`.
+- Applied the Prisma schema to the project-local PostgreSQL database and seeded the demo admin.
+- Started the backend and dashboard dev servers locally.
+- Generated a live pairing code for the connected phone flow.
+- Fixed mobile sync error handling crash caused by referencing the catch binding inside the state updater closure.
+- Improved API client errors to include backend response body/status for mobile troubleshooting.
+- Generated a fresh pairing code after the first registration attempt failed before creating a real device record.
+- Confirmed the physical Android phone registered successfully and appears in the backend device list.
+- Confirmed first mobile sync writes data to the backend: app usage, battery, location, and notification log rows exist in the local database.
+- Observed the mobile UI showing `queued 2`, likely from previous failed retry-queue items; sync writes are still reaching the backend.
+- Removed seeded dummy devices (`Pixel 8 - Home`, `Samsung A54`) and their cascaded sample logs from the local project database.
+- Removed dashboard hardcoded demo fallback data so admin views start empty and show only live backend data.
+- Verified the live devices API now returns only the real connected phone and the daily report contains only real collected counts.
+- Added admin device activity detail endpoint at `GET /api/v1/devices/:id/activity` for latest battery, location, app usage, call log, and notification records.
+- Added API client support for loading per-device activity details.
+- Made dashboard permission chips clickable and added a live breakdown panel for battery percent/charging, location coordinates/map link, app usage rows, call logs, and notification rows.
+- Verified the live activity endpoint returns real battery samples for the connected phone.
+- Improved Android battery collection to read the current sticky `ACTION_BATTERY_CHANGED` status, fixing stale/less reliable battery percent and charging detection.
+- Added mobile-side Android permission/settings prompts for selected consent categories before registration/sync: location, call logs, usage access, and notification access.
+- Added dashboard Refresh controls for live backend snapshots and selected activity breakdowns.
+- Rebuilt and reinstalled the updated Android debug APK on the connected phone.
+- Implemented real Android WorkManager background sync instead of the previous placeholder worker.
+- Background sync now persists device id, device token, API base URL, selected permissions, and sync cursor into native SharedPreferences.
+- Background worker can collect and upload battery, last known location, app usage, call logs, and persisted notification listener records without opening the React Native UI.
+- Auto-enabled scheduled background sync for paired devices and enqueued an immediate one-time background sync on app startup.
+- Verified background sync wrote fresh battery rows to the local database without pressing `Sync now`.
+- Added an Android foreground sync service that keeps approved background sync active at a 1-minute interval with a persistent notification.
+- Updated mobile default sync interval to 1 minute and allowed 1-minute interval entry in the UI.
+- Rebuilt/reinstalled the APK and verified fresh battery rows continue to arrive after sending the app to the background/home screen.
+- Fixed Android 14/15 foreground-service crash by declaring `foregroundServiceType="dataSync"`, requesting `FOREGROUND_SERVICE_DATA_SYNC`, and starting the service with `FOREGROUND_SERVICE_TYPE_DATA_SYNC`.
+- Rebuilt/reinstalled the fixed APK and verified no `MissingForegroundServiceTypeException` crash after launch/backgrounding.
+- Verified 1-minute foreground background sync continues to write fresh battery rows while the app is on the home screen.
+- Forced existing paired devices to migrate scheduled sync to a 1-minute interval on app startup, even if older AsyncStorage settings had 15 minutes.
+- Added dashboard auto-refresh every 60 seconds for summary data and selected device detail panels.
+- Verified local database rows are now arriving on roughly 1-minute cadence without tapping `Sync now`.
+- Added dashboard expand/collapse controls for App Usage summary and long device-detail history lists, defaulting to 5 visible rows.
+- Verified `corepack pnpm lint` and `corepack pnpm build` pass.
+- Verified backend Jest tests pass.
+- Verified full workspace test suite passes.
+- Added reusable dashboard collapse/expand controls across site blocks including pairing, devices, activity counters, location, map status, reports, settings, audit trail, status panels, and metric cards.
+- Added a custom Android adaptive launcher icon for Family Monitor.
+- Fixed mobile pairing/device-name/interval inputs so typed text, placeholders, and cursor are visible on Android.
+- Changed the dashboard flow to show a dedicated login page before rendering admin data, with sign-out moved into the authenticated header.
+- Added a Google Maps embed and external Google Maps link to the dashboard Location page based on the displayed latitude/longitude.
+- Replaced the Location tab's hardcoded coordinates with the latest synced live location from the device activity API.
+- Added production-oriented `.env.example` and changed Docker Compose to require environment-driven PostgreSQL/JWT secrets instead of hardcoded weak defaults.
+- Added backend production startup guard that rejects placeholder/short JWT secrets when `NODE_ENV=production`.
+- Tightened backend request validation to reject non-whitelisted DTO fields.
+- Centralized the mobile API base URL in `apps/mobile/src/config.ts` so release builds can point to a public backend URL.
+- Updated deployment docs and README with production environment, migration, mobile API URL, and no-seed guidance.
+- Updated dashboard tests for the new login-first flow.
+
+## In Progress
+
+- Clear or drain any stale mobile retry-queue items and continue permission-specific collector validation.
+- Configure OnePlus battery settings for reliable long-running foreground/background sync outside USB/local dev.
+
+## Left
+
+- Generate committed Prisma migration files once a live development database is available.
+- Replace `.env` placeholder values with strong production secrets before starting the production Docker stack.
+- Update `apps/mobile/src/config.ts` from local USB `localhost` to the public production API URL before release APK builds.
+- Generate/sign a release Android APK/AAB with a private keystore before distribution.
+- Grant consent-based permissions on the connected Android phone and validate first sync.
+
+## Validation Notes
+
+- `docker compose --env-file .env.example config` validates successfully with the production env template.
+- `docker compose --env-file .env.example build` was attempted, but Docker daemon commands stopped responding and timed out after the long image-build attempt; rerun once Docker Desktop is idle/responsive.
+- Android SDK validation passed via Android CLI package listing.
+- Android Gradle wrapper network issue was bypassed with the manually downloaded Gradle ZIP.
+- Android Gradle debug build passed with `..\..\..\.tools\gradle-8.8\bin\gradle.bat :app:assembleDebug`.
+- `adb devices -l` detects connected phone `cd12d639` / `CPH2569`.
+- Metro is running locally on port 8081 for the debug APK, with ADB reverse forwarding enabled.
+- Backend port 4000 is also reverse-forwarded for the connected physical device.
+- Backend health endpoint responds OK at `http://localhost:4000/api/v1/health`.
+- Dashboard dev server responds OK at `http://localhost:5173`.
+- `emulator -list-avds` currently shows no configured emulator.
+- Build warning remains: `DeviceCollectorsModule.kt` uses deprecated `checkOpNoThrow`, and AsyncStorage emits upstream Android manifest/package warnings.
+- Latest dashboard TypeScript verification passed with `corepack pnpm --filter @family-monitor/dashboard lint`.
+- Latest mobile TypeScript verification passed with `corepack pnpm --filter @family-monitor/mobile lint`.
+- Latest dashboard TypeScript verification passed after the login-page gate change.
+- Latest dashboard TypeScript verification passed after adding the Google Maps location embed.
+- Latest dashboard TypeScript verification passed after binding Location tab coordinates to live synced location data.
+- Latest Android debug APK build passed and was installed on connected phone `cd12d639`.
+- Latest full workspace verification passed: `corepack pnpm lint`, `corepack pnpm test`, and `corepack pnpm build`.
+- Latest Android debug APK build passed after centralizing the API base URL.

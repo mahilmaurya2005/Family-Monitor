@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum DevicePlatform {
+  ANDROID
+}
+
+enum PermissionType {
+  APP_USAGE
+  LOCATION
+  CALL_LOGS
+  NOTIFICATIONS
+  BATTERY
+  INSTALLED_APPS
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(ADMIN)
+  devices      Device[]
+  sessions     UserSession[]
+  pairingCodes DevicePairingCode[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model UserSession {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+  revokedAt        DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Device {
+  id               String              @id @default(cuid())
+  ownerId          String
+  owner            User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  displayName      String
+  platform         DevicePlatform      @default(ANDROID)
+  deviceIdentifier String              @unique
+  appVersion       String?
+  lastSyncAt       DateTime?
+  registeredAt     DateTime            @default(now())
+  permissions      DevicePermission[]
+  sessions         DeviceSession[]
+  appUsageLogs     AppUsageLog[]
+  callLogs         CallLog[]
+  notificationLogs NotificationLog[]
+  locationLogs     LocationLog[]
+  batteryLogs      BatteryLog[]
+  installedApps    InstalledApp[]
+
+  @@index([ownerId])
+  @@index([lastSyncAt])
+}
+
+model DevicePermission {
+  id          String         @id @default(cuid())
+  deviceId    String
+  device      Device         @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type        PermissionType
+  granted     Boolean        @default(false)
+  disclosedAt DateTime
+  grantedAt   DateTime?
+  revokedAt   DateTime?
+
+  @@unique([deviceId, type])
+}
+
+model DevicePairingCode {
+  id        String    @id @default(cuid())
+  ownerId   String
+  owner     User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  codeHash  String    @unique
+  label     String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([ownerId, createdAt])
+  @@index([expiresAt])
+}
+
+model DeviceSession {
+  id           String   @id @default(cuid())
+  deviceId     String
+  device       Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  revokedAt    DateTime?
+
+  @@index([deviceId])
+}
+
+model AppUsageLog {
+  id             String   @id @default(cuid())
+  deviceId       String
+  device         Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  packageName    String
+  appName        String?
+  openedAt       DateTime
+  closedAt       DateTime?
+  durationMillis Int
+  createdAt      DateTime @default(now())
+
+  @@index([deviceId, openedAt])
+  @@index([packageName])
+}
+
+model CallLog {
+  id             String   @id @default(cuid())
+  deviceId       String
+  device         Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  phoneNumber    String
+  contactName    String?
+  direction      String
+  startedAt      DateTime
+  durationMillis Int
+  createdAt      DateTime @default(now())
+
+  @@index([deviceId, startedAt])
+}
+
+model NotificationLog {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  packageName String
+  appName     String?
+  title       String?
+  body        String?
+  postedAt    DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId, postedAt])
+}
+
+model LocationLog {
+  id         String   @id @default(cuid())
+  deviceId   String
+  device     Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  latitude   Float
+  longitude  Float
+  accuracyM  Float?
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([deviceId, recordedAt])
+}
+
+model BatteryLog {
+  id         String   @id @default(cuid())
+  deviceId   String
+  device     Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  level      Int
+  charging   Boolean
+  ringerMode String?
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([deviceId, recordedAt])
+}
+
+model InstalledApp {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  packageName String
+  appName     String?
+  versionName String?
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  @@unique([deviceId, packageName])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  deviceId  String
+  period    String
+  startsAt  DateTime
+  endsAt    DateTime
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([deviceId, startsAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  target    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+}
