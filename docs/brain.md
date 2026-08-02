@@ -153,16 +153,16 @@
 - Seeded the Supabase production database with admin login `admin@example.com`.
 - Verified the Render backend health and login endpoints are working.
 - Added dashboard Vercel rewrite config so `/api/v1/*` routes proxy to the Render backend.
+- Confirmed the dashboard was deployed to Vercel and Render `WEB_ORIGIN` was updated by the user.
+- Updated the mobile app API base URL to the live Render backend for production-device testing.
 
 ## In Progress
 
-- Deploy the dashboard to Vercel and update Render `WEB_ORIGIN` to the final Vercel URL.
 - Build a production Android APK pointed at the Render backend URL.
 
 ## Left
 
 - Generate committed Prisma migration files once a live development database is available.
-- Update `apps/mobile/src/config.ts` from local USB `localhost` to the public production API URL before release APK builds.
 - Generate/sign a release Android APK/AAB with a private keystore before distribution.
 - Grant consent-based permissions on the connected Android phone and validate first sync.
 - Reset the Supabase database password after testing because a temporary password was shared during setup.
