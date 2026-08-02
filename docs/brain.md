@@ -146,19 +146,26 @@
 - Centralized the mobile API base URL in `apps/mobile/src/config.ts` so release builds can point to a public backend URL.
 - Updated deployment docs and README with production environment, migration, mobile API URL, and no-seed guidance.
 - Updated dashboard tests for the new login-first flow.
+- Pushed the current codebase to GitHub at `https://github.com/mahilmaurya2005/Family-Monitor.git`.
+- Deployed the backend on Render at `https://family-monitor-backend-77n8.onrender.com/`.
+- Applied the Prisma schema to the Supabase production database using the session pooler.
+- Generated the local Prisma client after clearing Windows Node process locks.
+- Seeded the Supabase production database with admin login `admin@example.com`.
+- Verified the Render backend health and login endpoints are working.
+- Added dashboard Vercel rewrite config so `/api/v1/*` routes proxy to the Render backend.
 
 ## In Progress
 
-- Clear or drain any stale mobile retry-queue items and continue permission-specific collector validation.
-- Configure OnePlus battery settings for reliable long-running foreground/background sync outside USB/local dev.
+- Deploy the dashboard to Vercel and update Render `WEB_ORIGIN` to the final Vercel URL.
+- Build a production Android APK pointed at the Render backend URL.
 
 ## Left
 
 - Generate committed Prisma migration files once a live development database is available.
-- Replace `.env` placeholder values with strong production secrets before starting the production Docker stack.
 - Update `apps/mobile/src/config.ts` from local USB `localhost` to the public production API URL before release APK builds.
 - Generate/sign a release Android APK/AAB with a private keystore before distribution.
 - Grant consent-based permissions on the connected Android phone and validate first sync.
+- Reset the Supabase database password after testing because a temporary password was shared during setup.
 
 ## Validation Notes
 
@@ -182,3 +189,5 @@
 - Latest Android debug APK build passed and was installed on connected phone `cd12d639`.
 - Latest full workspace verification passed: `corepack pnpm lint`, `corepack pnpm test`, and `corepack pnpm build`.
 - Latest Android debug APK build passed after centralizing the API base URL.
+- Supabase schema push completed successfully against `aws-0-ap-southeast-1.pooler.supabase.com:5432`.
+- Render backend health returned OK and production login returned an access token for the seeded admin.

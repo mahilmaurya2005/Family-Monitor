@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://family-monitor-backend-77n8.onrender.com/api/v1/:path*"
+    }
+  ]
+}
