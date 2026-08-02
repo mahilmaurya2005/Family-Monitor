@@ -295,22 +295,34 @@ export function App() {
     if (showLoading) {
       setStatus('Loading live data...');
     }
+    const failures: string[] = [];
+    const safeLoad = async <T,>(label: string, request: () => Promise<T>, fallback: T) => {
+      try {
+        return await request();
+      } catch {
+        failures.push(label);
+        return fallback;
+      }
+    };
+
     try {
-      const [deviceResponse, dailyResponse, weeklyResponse, monthlyResponse, auditResponse] =
-        await Promise.all([
-          api.getDevices(),
-          api.getDailyReport(),
-          api.getWeeklyReport(),
-          api.getMonthlyReport(),
-          api.getAuditLogs(),
-        ]);
+      const deviceResponse = await safeLoad('devices', () => api.getDevices(), devices);
       const typedDevices = deviceResponse as DeviceFromApi[];
-      const locationResponse = await Promise.all(
-        typedDevices.map(async (device) => {
-          try {
-            const activity = await api.getDeviceActivity(device.id);
-            const latest = activity.location[0];
-            return latest
+      const dailyResponse = await safeLoad('daily report', () => api.getDailyReport(), report);
+      const weeklyResponse = await safeLoad('weekly report', () => api.getWeeklyReport(), weeklyReport);
+      const monthlyResponse = await safeLoad(
+        'monthly report',
+        () => api.getMonthlyReport(),
+        monthlyReport,
+      );
+      const auditResponse = await safeLoad('audit logs', () => api.getAuditLogs(), auditLogs);
+      const locationResponse: Array<LatestLocation | null> = [];
+      for (const device of typedDevices) {
+        try {
+          const activity = await api.getDeviceActivity(device.id);
+          const latest = activity.location[0];
+          locationResponse.push(
+            latest
               ? {
                   deviceId: device.id,
                   deviceName: device.displayName,
@@ -319,12 +331,12 @@ export function App() {
                   accuracyM: latest.accuracyM,
                   recordedAt: latest.recordedAt,
                 }
-              : null;
-          } catch {
-            return null;
-          }
-        }),
-      );
+              : null,
+          );
+        } catch {
+          failures.push(`${device.displayName} activity`);
+        }
+      }
       if (!active) {
         return;
       }
@@ -334,7 +346,7 @@ export function App() {
       setMonthlyReport(monthlyResponse);
       setAuditLogs(auditResponse);
       setLatestLocations(locationResponse.filter(isLatestLocation));
-      setStatus('Live backend data');
+      setStatus(failures.length ? `Partial data loaded: ${failures.join(', ')}` : 'Live backend data');
     } catch {
       if (!active) {
         return;

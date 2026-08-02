@@ -160,10 +160,12 @@
 - Fixed backend CORS origin matching so dashboard origins with/without a trailing slash are accepted.
 - Removed seeded production dummy devices and their cascaded sample logs from Supabase.
 - Verified Vercel dashboard API proxy returns `200 OK` for devices, reports, and audit endpoints with a valid admin token.
+- Reduced backend database query concurrency in reports and device activity endpoints to avoid Supabase/Render pool pressure.
+- Changed dashboard live-data loading to fetch sections sequentially and keep partial successful data if one API request fails.
 
 ## In Progress
 
-- Validate dashboard browser session refresh and production mobile sync.
+- Redeploy backend and dashboard with the API stability fixes, then validate browser refresh and production mobile sync.
 
 ## Left
 
@@ -200,3 +202,4 @@
 - Latest Android release APK installed successfully with ADB and the app process is running without AndroidRuntime/ReactNativeJS crash logs.
 - Latest backend production build passed after the CORS normalization fix.
 - Production dashboard API checks passed for `/devices`, `/reports/daily`, `/reports/monthly`, and `/audit-logs`.
+- Latest backend build, backend tests, and dashboard production build passed after the API stability fixes.

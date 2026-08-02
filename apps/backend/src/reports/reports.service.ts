@@ -23,45 +23,42 @@ export class ReportsService {
       openedAt: { gte: startsAt, lte: now },
     };
 
-    const [usage, batteryCount, locationCount, callCount, notificationCount] =
-      await Promise.all([
-        this.prisma.appUsageLog.groupBy({
-          by: ['packageName', 'appName'],
-          where,
-          _sum: { durationMillis: true },
-          _count: true,
-          orderBy: { _sum: { durationMillis: 'desc' } },
-          take: 10,
-        }),
-        this.prisma.batteryLog.count({
-          where: {
-            ...(deviceId ? { deviceId } : {}),
-            device: deviceFilter,
-            recordedAt: { gte: startsAt },
-          },
-        }),
-        this.prisma.locationLog.count({
-          where: {
-            ...(deviceId ? { deviceId } : {}),
-            device: deviceFilter,
-            recordedAt: { gte: startsAt },
-          },
-        }),
-        this.prisma.callLog.count({
-          where: {
-            ...(deviceId ? { deviceId } : {}),
-            device: deviceFilter,
-            startedAt: { gte: startsAt },
-          },
-        }),
-        this.prisma.notificationLog.count({
-          where: {
-            ...(deviceId ? { deviceId } : {}),
-            device: deviceFilter,
-            postedAt: { gte: startsAt },
-          },
-        }),
-      ]);
+    const usage = await this.prisma.appUsageLog.groupBy({
+      by: ['packageName', 'appName'],
+      where,
+      _sum: { durationMillis: true },
+      _count: true,
+      orderBy: { _sum: { durationMillis: 'desc' } },
+      take: 10,
+    });
+    const batteryCount = await this.prisma.batteryLog.count({
+      where: {
+        ...(deviceId ? { deviceId } : {}),
+        device: deviceFilter,
+        recordedAt: { gte: startsAt },
+      },
+    });
+    const locationCount = await this.prisma.locationLog.count({
+      where: {
+        ...(deviceId ? { deviceId } : {}),
+        device: deviceFilter,
+        recordedAt: { gte: startsAt },
+      },
+    });
+    const callCount = await this.prisma.callLog.count({
+      where: {
+        ...(deviceId ? { deviceId } : {}),
+        device: deviceFilter,
+        startedAt: { gte: startsAt },
+      },
+    });
+    const notificationCount = await this.prisma.notificationLog.count({
+      where: {
+        ...(deviceId ? { deviceId } : {}),
+        device: deviceFilter,
+        postedAt: { gte: startsAt },
+      },
+    });
 
     await this.audit.record(ownerId, 'report.view', `report:${period}`, { deviceId });
 

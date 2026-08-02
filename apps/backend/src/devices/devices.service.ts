@@ -157,33 +157,31 @@ export class DevicesService {
   async activity(ownerId: string, id: string) {
     await this.get(ownerId, id);
 
-    const [battery, location, appUsage, calls, notifications] = await Promise.all([
-      this.prisma.batteryLog.findMany({
-        where: { deviceId: id },
-        orderBy: { recordedAt: 'desc' },
-        take: 10,
-      }),
-      this.prisma.locationLog.findMany({
-        where: { deviceId: id },
-        orderBy: { recordedAt: 'desc' },
-        take: 10,
-      }),
-      this.prisma.appUsageLog.findMany({
-        where: { deviceId: id },
-        orderBy: { openedAt: 'desc' },
-        take: 25,
-      }),
-      this.prisma.callLog.findMany({
-        where: { deviceId: id },
-        orderBy: { startedAt: 'desc' },
-        take: 25,
-      }),
-      this.prisma.notificationLog.findMany({
-        where: { deviceId: id },
-        orderBy: { postedAt: 'desc' },
-        take: 25,
-      }),
-    ]);
+    const battery = await this.prisma.batteryLog.findMany({
+      where: { deviceId: id },
+      orderBy: { recordedAt: 'desc' },
+      take: 10,
+    });
+    const location = await this.prisma.locationLog.findMany({
+      where: { deviceId: id },
+      orderBy: { recordedAt: 'desc' },
+      take: 10,
+    });
+    const appUsage = await this.prisma.appUsageLog.findMany({
+      where: { deviceId: id },
+      orderBy: { openedAt: 'desc' },
+      take: 25,
+    });
+    const calls = await this.prisma.callLog.findMany({
+      where: { deviceId: id },
+      orderBy: { startedAt: 'desc' },
+      take: 25,
+    });
+    const notifications = await this.prisma.notificationLog.findMany({
+      where: { deviceId: id },
+      orderBy: { postedAt: 'desc' },
+      take: 25,
+    });
 
     return {
       battery,
